@@ -18,7 +18,7 @@ Before running the script, you must have the following installed:
 
 1. **Install Python**: Download Python from the official [Python website](https://www.python.org/downloads/) and install it on your system.
 
-2. **Set up a Virtual Environment** (**OPTIONAL You Can Go To Step 3**):
+2. **OPTIONAL: Set up a Virtual Environment** (**You Can Skip This Step**):
    
    Open a terminal and navigate to your project directory. Then run:
    ```sh
