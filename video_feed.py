@@ -1,8 +1,12 @@
 import cv2
 import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
+import time
 
 class_names = ["Angry", "Happy", "Sad", "Surprise"]
 model = tf.keras.models.load_model("model.h5")  # Move model loading outside the loop to optimize
+
 
 
 def detect_emotion(frame_p):
@@ -10,7 +14,22 @@ def detect_emotion(frame_p):
     num = max(emotion[0])
     idx = list(emotion[0]).index(num)
 
+    fig, ax = plt.subplots()  # Create a figure and an axis.
+    ax.imshow(frame_p)  # Plot image.
+    ax.text(5, 5, str(idx), bbox=dict(fill=False, edgecolor='red', linewidth=2))
+    fig.canvas.draw()  # Draw the figure so you can find the renderer.
+
+    # Save the figure to a file.
+    frame = np.array(fig.canvas.renderer.buffer_rgba())
+    frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR)
+
+    # Timestamped filename.
+    timestamp = int(time.time())
+    frame_name = f'dataset/classified_frame_{timestamp}.jpeg'
+    cv2.imwrite(frame_name, frame_bgr)
+
     return idx, num
+
 
 
 def preprocess(frame_p):
