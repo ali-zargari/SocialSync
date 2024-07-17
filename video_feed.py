@@ -16,7 +16,7 @@ def detect_emotion(frame_p):
 def preprocess(frame_p):
     frame_p = cv2.cvtColor(frame_p, cv2.COLOR_BGR2RGB)
     frame_p = cv2.resize(frame_p, (48, 48))
-    frame_p = frame_p / 255.
+    frame_p = frame_p / 255.0
 
     return frame_p
 
@@ -26,10 +26,13 @@ def detect_face(frame_p):
     gray = cv2.cvtColor(frame_p, cv2.COLOR_BGR2GRAY)
     faces = cascade.detectMultiScale(gray, 1.1, 4)
 
-    return gray, faces,
+    return gray, faces
 
 
-video = cv2.VideoCapture(0)
+
+video_path = 'test.mp4'
+video = cv2.VideoCapture(video_path)
+
 
 while True:
     ret, frame = video.read()
@@ -50,10 +53,12 @@ while True:
 
         cv2.imshow("Window", frame)
 
+    else:
+        break  # Exit the loop if there are no more frames to read
+
     # Press 'q' to quit the loop
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-
 
 video.release()
 cv2.destroyAllWindows()
