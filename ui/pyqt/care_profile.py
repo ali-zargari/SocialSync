@@ -5,11 +5,10 @@ from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import Qt, QSize
 
 class CareProfile(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self):
         super().__init__()
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #8FBC8F;")  # Sea Green color
-        self.parent = parent
 
         # Main widget and layout
         central_widget = QWidget()
