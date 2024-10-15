@@ -6,9 +6,6 @@ from PyQt5.QtCore import Qt, QTimer
 from backend.controllers.emotion_recognition import detect_face, detect_emotion, preprocess
 from ui.pyqt.cv_window import VideoWindow
 
-
-
-
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -90,12 +87,6 @@ class MainWindow(QWidget):
             QPixmap("images/v20_308.png").scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         profile_logo.move(20, 20)
 
-        ###
-        ### TODO:
-        ###
-        ###
-        ###
-
         emotions = [
             ("Annoyed: 90%", 90, 110, QColor(255, 193, 7)),
             ("Happiness: 3%", 90, 170, QColor(12, 150, 67)),
@@ -116,14 +107,6 @@ class MainWindow(QWidget):
         return bubble
 
     def createConfidenceSection(self):
-
-        ###
-        ### TODO:
-        ###
-        ###
-        ###
-
-
         section = QFrame()
         section.setFixedSize(360, 360)
         layout = QVBoxLayout(section)
@@ -199,13 +182,6 @@ class MainWindow(QWidget):
             self.video_label.setPixmap(QPixmap.fromImage(qt_image))
 
     def createExplanationSection(self):
-
-        ###
-        ### TODO:
-        ###
-        ###
-        ###
-
         section = QLabel()
         section.setText("""
         <p><strong style='font-size: 24px;'>Upset:</strong><br>
