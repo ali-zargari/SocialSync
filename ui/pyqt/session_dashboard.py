@@ -1,4 +1,5 @@
 import sys
+
 import cv2
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame
 from PyQt5.QtGui import QFont, QPixmap, QImage, QColor
@@ -6,12 +7,10 @@ from PyQt5.QtCore import Qt, QTimer
 from backend.controllers.emotion_recognition import detect_face, detect_emotion, preprocess
 from ui.pyqt.cv_window import VideoWindow
 
-
-
-
 class MainWindow(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.main_window = parent  # Reference to the main stacked window
         self.initUI()
 
         # Initialize video feed from VideoWindow
@@ -46,6 +45,7 @@ class MainWindow(QWidget):
 
         header_layout.addStretch()
 
+        # Buttons for Profile, History, and Sign Out
         for text in ["Profile", "History", "Sign Out"]:
             button = QPushButton(text, self)
             button.setFixedSize(150, 50)
@@ -55,11 +55,21 @@ class MainWindow(QWidget):
                 background-color: rgba(113, 184, 154, 1);
                 border-radius: 25px;
             """)
+            button.clicked.connect(lambda checked, btn=text: self.handle_button_click(btn))
             header_layout.addWidget(button)
             if text != "Sign Out":
                 header_layout.addSpacing(20)
 
         return header
+
+    def handle_button_click(self, btn_name):
+        """ Handle button clicks for Profile, History, and Sign Out """
+        if btn_name == "Profile":
+            self.main_window.show_care_profile_settings()
+        elif btn_name == "History":
+            self.main_window.show_history_page()
+        elif btn_name == "Sign Out":
+            self.main_window.show_login_page()
 
     def createMainContent(self):
         content = QWidget()
@@ -90,12 +100,6 @@ class MainWindow(QWidget):
             QPixmap("images/v20_308.png").scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         profile_logo.move(20, 20)
 
-        ###
-        ### TODO:
-        ###
-        ###
-        ###
-
         emotions = [
             ("Annoyed: 90%", 90, 110, QColor(255, 193, 7)),
             ("Happiness: 3%", 90, 170, QColor(12, 150, 67)),
@@ -116,14 +120,6 @@ class MainWindow(QWidget):
         return bubble
 
     def createConfidenceSection(self):
-
-        ###
-        ### TODO:
-        ###
-        ###
-        ###
-
-
         section = QFrame()
         section.setFixedSize(360, 360)
         layout = QVBoxLayout(section)
@@ -199,13 +195,6 @@ class MainWindow(QWidget):
             self.video_label.setPixmap(QPixmap.fromImage(qt_image))
 
     def createExplanationSection(self):
-
-        ###
-        ### TODO:
-        ###
-        ###
-        ###
-
         section = QLabel()
         section.setText("""
         <p><strong style='font-size: 24px;'>Upset:</strong><br>
@@ -230,6 +219,7 @@ class MainWindow(QWidget):
         self.video_window.timer.stop()
         self.video_window.video.release()
         event.accept()
+
 
 
 if __name__ == "__main__":

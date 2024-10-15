@@ -6,7 +6,8 @@ from PyQt5.QtGui import QFont, QPixmap
 
 class CustomPage(QWidget):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__()
+        self.parent = parent  # Store a reference to MainWindow
         self.initUI()
 
     def initUI(self):
@@ -52,11 +53,11 @@ class CustomPage(QWidget):
         middle_container.setStyleSheet("""
             background-color: rgba(178,255,209,1);
             border: 1px solid rgba(0,0,0,1);
-            border-radius: 100px;  # Adjusted for rounded effect
+            border-radius: 100px;
             box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
         """)
 
-        # Start button - Increase size 3x
+        # Start button - Increase size
         start_button = QPushButton('Start', middle_container)
         start_button.setFont(QFont('Josefin Sans', 96, QFont.Bold))  # Increase font size
         start_button.setStyleSheet("""
@@ -70,8 +71,12 @@ class CustomPage(QWidget):
                 background-color: rgba(240,240,240,1);
             }
         """)
-        start_button.setFixedSize(750, 300)  # 3x the previous size (250x100)
-        start_button.move((middle_container.width() - start_button.width()) // 2, (middle_container.height() - start_button.height()) // 2)  # Center within the container
+        start_button.setFixedSize(750, 300)  # Increase size
+        start_button.move((middle_container.width() - start_button.width()) // 2,
+                          (middle_container.height() - start_button.height()) // 2)  # Center within the container
+
+        # Connect the Start button to the function to show the video window
+        start_button.clicked.connect(self.show_video_window)
 
         # Adding image placeholder - Adjusted size and position
         logo_container = QLabel(self)
@@ -98,9 +103,7 @@ class CustomPage(QWidget):
             }
         """)
 
+    def show_video_window(self):
+        # Switch to the video window
+        self.parent.show_video_window()
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ex = CustomPage()
-    ex.show()
-    sys.exit(app.exec_())

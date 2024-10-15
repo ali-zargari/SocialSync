@@ -65,6 +65,11 @@ class LoginPage(QWidget):
         signInButton.clicked.connect(self.go_to_dashboard)
         layout.addWidget(signInButton)
 
+        # Sign In Button
+        registerButton = QPushButton("Register")
+        self.setupButton(registerButton, "#71B89A", "#00695C")
+        registerButton.clicked.connect(self.go_to_dashboard)
+        layout.addWidget(registerButton)
 
         # Forgot Password Link
         forgotPassLabel = QLabel("Forgot Password?")
@@ -82,7 +87,7 @@ class LoginPage(QWidget):
                              f"QPushButton:hover {{ background-color: {hoverColor}; }}")
 
     def go_to_dashboard(self):
-        self.main_window.show_dashboard_page()  # Use the main_window reference
+        self.main_window.show_presesh_page()  # Use the main_window reference
 
     def go_to_register(self):
         self.main_window.show_register_page()  # Use the main_window reference

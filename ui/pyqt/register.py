@@ -1,126 +1,124 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QRadioButton,
-                             QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QFrame)
-from PyQt5.QtGui import QFont, QFontDatabase
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
+                             QPushButton, QLabel, QLineEdit, QFrame, QGridLayout,
+                             QRadioButton, QHBoxLayout, QTableWidget, QTableWidgetItem)
+from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import Qt
 
-class RegistrationForm(QWidget):
-    def __init__(self):
+
+class RegistrationForm(QMainWindow):
+    def __init__(self, parent=None):
         super().__init__()
-        self.initUI()
+        self.setFixedSize(1280, 720)
+        self.setStyleSheet("background-color: #8FBC8F;")  # Sea Green color
+        self.parent = parent
 
-    def initUI(self):
-        # Set window properties
-        self.setWindowTitle('Registration')
-        self.setGeometry(100, 100, 1000, 800)
-        self.setStyleSheet("background-color: #71B79A;")
+        # Main widget and layout
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        main_layout = QVBoxLayout(central_widget)
+        main_layout.setAlignment(Qt.AlignCenter)
 
-        # Load custom font
-        font_id = QFontDatabase.addApplicationFont("path/to/JosefinSans-Regular.ttf")
-        if font_id != -1:
-            font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
-        else:
-            font_family = "Arial"
-
-        # Create main layout
-        main_layout = QVBoxLayout(self)
-
-        # Create white background
-        white_bg = QFrame(self)
-        white_bg.setStyleSheet("""
+        # White rounded rectangle container
+        container = QFrame()
+        container.setStyleSheet("""
             background-color: white;
-            border-radius: 30px;
-            padding: 20px;
+            border-radius: 40px;
         """)
+        container.setFixedSize(800, 600)
+        container_layout = QVBoxLayout(container)
+        container_layout.setAlignment(Qt.AlignTop)
+        container_layout.setSpacing(20)
 
-        # Create grid layout for form elements
-        grid = QGridLayout(white_bg)
-        grid.setVerticalSpacing(10)  # Reduced vertical spacing
-        grid.setHorizontalSpacing(20)
-
-        # Add title
+        # Title
         title = QLabel("Registration")
-        title.setFont(QFont(font_family, 36, QFont.Bold))
-        title.setStyleSheet("color: #71B89A; margin-bottom: 20px;")
-        grid.addWidget(title, 0, 0, 1, 4, Qt.AlignHCenter)
+        title.setStyleSheet("""
+            color: #8FBC8F;
+            font-size: 36px;
+            font-weight: bold;
+        """)
+        title.setAlignment(Qt.AlignCenter)
 
-        # Create form fields
+        # Form layout
+        form_layout = QGridLayout()
+        form_layout.setColumnStretch(1, 1)
+        form_layout.setColumnStretch(3, 1)
+
+        # Form fields
         fields = [
-            ("First Name:", 1, 0), ("Address:", 1, 2),
-            ("Middle Name:", 2, 0), ("City:", 2, 2),
-            ("Last Name:", 3, 0), ("Zip:", 3, 2),
-            ("Date of Birth:", 4, 0), ("State:", 4, 2),
-            ("Email Address:", 5, 0), ("Country:", 5, 2),
-            ("Phone Number:", 6, 0), ("Sex:", 6, 2),
-            ("Password:", 7, 0), ("Confirm Password:", 7, 2),
+            ("First Name:", 0, 0), ("Address:", 0, 2),
+            ("Middle Name:", 1, 0), ("City:", 1, 2),
+            ("Last Name:", 2, 0), ("Zip:", 2, 2),
+            ("Date of Birth:", 3, 0), ("State:", 3, 2),
+            ("Email Address:", 4, 0), ("Country:", 4, 2),
+            ("Phone Number:", 5, 0), ("Gender:", 5, 2)
         ]
 
         for label_text, row, col in fields:
             label = QLabel(label_text)
-            label.setFont(QFont(font_family, 12))
-            label.setStyleSheet("color: #23465A;")
-            grid.addWidget(label, row, col)
+            label.setStyleSheet("color: #20B2AA; font-size: 14px; font-weight: bold;")
+            form_layout.addWidget(label, row, col)
 
-            if label_text == "Sex:":
-                sex_layout = QHBoxLayout()
-                female_radio = QRadioButton("Female")
-                male_radio = QRadioButton("Male")
-                female_radio.setFont(QFont(font_family, 12))
-                male_radio.setFont(QFont(font_family, 12))
-                female_radio.setStyleSheet("color: black;")
-                male_radio.setStyleSheet("color: black;")
-                sex_layout.addWidget(female_radio)
-                sex_layout.addWidget(male_radio)
-                sex_layout.addStretch()
-                grid.addLayout(sex_layout, row, col + 1)
+            if label_text != "Gender:":
+                line_edit = QLineEdit()
+                line_edit.setStyleSheet("background-color: #D3D3D3; border: none; padding: 5px;")
+                form_layout.addWidget(line_edit, row, col + 1)
             else:
-                input_field = QLineEdit()
-                input_field.setStyleSheet("""
-                    background-color: #F0F0F0;
-                    border: 1px solid #D0D0D0;
-                    border-radius: 5px;
-                    padding: 5px;
-                    font-size: 14px;
-                    color: black;
-                """)
-                if "Password" in label_text:
-                    input_field.setEchoMode(QLineEdit.Password)
-                grid.addWidget(input_field, row, col + 1)
+                gender_layout = QHBoxLayout()
+                male_radio = QRadioButton("Male")
+                female_radio = QRadioButton("Female")
+                gender_layout.addWidget(male_radio)
+                gender_layout.addWidget(female_radio)
+                form_layout.addLayout(gender_layout, row, col + 1)
 
-        # Add buttons in a column
-        button_layout = QVBoxLayout()
-        buttons = ["Submit", "Cancel"]  # Removed "Add User" button
-        for button_text in buttons:
-            button = QPushButton(button_text)
-            button.setFont(QFont(font_family, 14))
-            button.setStyleSheet("""
-                QPushButton {
-                    background-color: #71B89A;
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    padding: 10px;
-                    min-width: 200px;
-                    margin: 5px 0;
-                }
-                QPushButton:hover {
-                    background-color: #5DA688;
-                }
-            """)
-            button.clicked.connect(self.button_clicked)
-            button_layout.addWidget(button)
+        # User table
+        user_table = QTableWidget(1, 3)
+        user_table.setHorizontalHeaderLabels(["Name", "Password", "Email"])
+        user_table.setItem(0, 0, QTableWidgetItem("John Doe"))
+        user_table.setItem(0, 1, QTableWidgetItem("Password123"))
+        user_table.setItem(0, 2, QTableWidgetItem("johndoe@gmail.com"))
+        user_table.setStyleSheet("background-color: white; border: none;")
+        user_table.horizontalHeader().setStyleSheet("font-weight: bold;")
 
-        grid.addLayout(button_layout, 8, 0, 2, 4, Qt.AlignCenter)  # Adjusted row span
+        # Buttons
+        add_user_button = self.create_button("Add User")
+        submit_button = self.create_button("Submit")
+        cancel_button = QPushButton("Cancel")
+        cancel_button.setStyleSheet("""
+            background-color: transparent;
+            color: #8FBC8F;
+            border: none;
+            font-size: 16px;
+        """)
 
-        # Center the white background
-        main_layout.addWidget(white_bg, alignment=Qt.AlignCenter)
+        # Add widgets to container layout
+        container_layout.addWidget(title)
+        container_layout.addLayout(form_layout)
+        container_layout.addWidget(user_table)
+        container_layout.addWidget(add_user_button, alignment=Qt.AlignCenter)
+        container_layout.addWidget(submit_button, alignment=Qt.AlignCenter)
+        container_layout.addWidget(cancel_button, alignment=Qt.AlignCenter)
 
-    def button_clicked(self):
-        sender = self.sender()
-        print(f"{sender.text()} button clicked")
+        # Add container to main layout
+        main_layout.addWidget(container)
+
+    def create_button(self, text):
+        button = QPushButton(text)
+        button.setStyleSheet("""
+            background-color: #8FBC8F;
+            color: white;
+            border-radius: 20px;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 200px;
+        """)
+        button.clicked.connect(lambda: print(f"{text} clicked"))
+        return button
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = RegistrationForm()
-    ex.show()
+    window = RegistrationForm()
+    window.show()
     sys.exit(app.exec_())

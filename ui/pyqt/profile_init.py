@@ -6,11 +6,12 @@ from PyQt5.QtCore import Qt, QSize, QRect
 from PyQt5.QtSvg import QSvgRenderer
 
 class ProfileSetup(QMainWindow):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
         self.setWindowTitle("Profile Setup")
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #8FBC8F;")
+        self.parent = parent
 
         # Main widget and layout
         central_widget = QWidget()
@@ -90,6 +91,7 @@ class ProfileSetup(QMainWindow):
             font-weight: bold;
         """)
         next_button.setFixedSize(250, 60)
+
         next_button.clicked.connect(self.next_clicked)
 
         # Skip button
@@ -123,7 +125,7 @@ class ProfileSetup(QMainWindow):
         print("Vocal and Visual Settings clicked")
 
     def next_clicked(self):
-        print("Next clicked")
+        self.parent.show_vocal_visual_setting_page()
 
     def skip_clicked(self):
         print("Skip clicked")
