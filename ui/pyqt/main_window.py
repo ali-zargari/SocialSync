@@ -177,9 +177,6 @@ class MainWindow(QMainWindow):
     def show_second_register_user(self):
         self.navigate_to(self.second_register_user)
 
-    def show_register_patient(self):
-        self.navigate_to(self.register_patient)
-
     def show_session_overview(self):
         self.navigate_to(self.session_overview)
 
@@ -218,3 +215,6 @@ class MainWindow(QMainWindow):
 
     def show_vocal_and_visual_setting(self):
         self.navigate_to(self.vocal_and_visual_setting)
+
+    def show_register_patient(self):
+        self.navigate_to(self.register_patient)

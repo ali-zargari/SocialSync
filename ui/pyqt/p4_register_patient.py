@@ -1,16 +1,18 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
-from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLabel,
+                             QLineEdit, QPushButton)
+from PyQt5.QtGui import QFont, QColor, QPainter
 from PyQt5.QtCore import Qt
 
 class RegisterPatient(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.initUI()
         self.parent = parent
+        self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Register User')
+        # Main window setup
+        self.setWindowTitle('Adding User')
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #71B89A;")
 
@@ -21,32 +23,48 @@ class RegisterPatient(QWidget):
         # White rounded rectangle container
         container = QWidget(self)
         container.setStyleSheet("""
-            background-color: white;
-            border-radius: 20px;
+            QWidget {
+                background-color: white;
+                border-radius: 40px;
+            }
         """)
-        container.setFixedSize(360, 500)
+        container.setFixedSize(500, 600)
         container_layout = QVBoxLayout(container)
+        container_layout.setSpacing(20)
+        container_layout.setContentsMargins(50, 50, 50, 50)
 
         # Title
-        title = QLabel("Register User")
+        title = QLabel("Adding User")
         title.setAlignment(Qt.AlignCenter)
-        title.setFont(QFont("Arial", 24, QFont.Bold))
-        title.setStyleSheet("color: #71B89A;")
+        title.setFont(QFont("Arial", 36))
+        title.setStyleSheet("color: #4A90A4;")
         container_layout.addWidget(title)
+
+        # Spacer for vertical centering
+        container_layout.addStretch()
 
         # Input fields
         fields = ["First Name", "Last Name", "Email Address", "Password"]
         self.inputs = {}
+
         for field in fields:
             input_field = QLineEdit()
             input_field.setPlaceholderText(field)
             input_field.setStyleSheet("""
-                background-color: #E0E0E0;
-                border-radius: 15px;
-                padding: 10px;
-                font-size: 16px;
+                QLineEdit {
+                    background-color: #E0E0E0;
+                    border-radius: 25px;
+                    padding: 15px;
+                    font-size: 18px;
+                    color: #2B4865;
+                    margin: 10px;
+                }
+                QLineEdit:focus {
+                    border: 2px solid #71B89A;
+                }
             """)
-            container_layout.addWidget(input_field)
+            input_field.setFixedSize(300, 75)
+            container_layout.addWidget(input_field, alignment=Qt.AlignCenter)
             self.inputs[field] = input_field
 
         # Make password field secure
@@ -55,35 +73,69 @@ class RegisterPatient(QWidget):
         # Submit button
         submit_btn = QPushButton("Submit")
         submit_btn.setStyleSheet("""
-            background-color: #71B89A;
-            color: white;
-            border-radius: 15px;
-            padding: 10px;
-            font-size: 18px;
-            font-weight: bold;
+            QPushButton {
+                background-color: #71B89A;
+                color: white;
+                border-radius: 25px;
+                padding: 15px;
+                font-size: 20px;
+                font-weight: bold;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #5A9A7F;
+            }
         """)
+        submit_btn.setFixedSize(200, 50)
         submit_btn.clicked.connect(self.submit_form)
-        container_layout.addWidget(submit_btn)
+        container_layout.addWidget(submit_btn, alignment=Qt.AlignCenter)
 
-        # Cancel option
+        # Cancel button
         cancel_btn = QPushButton("Cancel")
         cancel_btn.setStyleSheet("""
-            background-color: transparent;
-            color: black;
-            border: none;
-            font-size: 16px;
+            QPushButton {
+                background-color: transparent;
+                color: black;
+                border: none;
+                font-size: 16px;
+            }
+            QPushButton:hover {
+                color: #666;
+            }
         """)
-        cancel_btn.clicked.connect(self.close)
-        container_layout.addWidget(cancel_btn)
+        cancel_btn.clicked.connect(self.cancel_form)
+        container_layout.addWidget(cancel_btn, alignment=Qt.AlignCenter)
+
+        # Spacer for vertical centering
+        container_layout.addStretch()
 
         # Center the container in the main window
         layout.addWidget(container, alignment=Qt.AlignCenter)
 
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        # Fill background with solid color
+        painter.fillRect(self.rect(), QColor("#71B89A"))
+
     def submit_form(self):
-        # Here you would typically process the form data
-        print("Form submitted:")
-        for field, input_field in self.inputs.items():
-            print(f"{field}: {input_field.text()}")
+        # Get form data
+        form_data = {
+            field: input_field.text()
+            for field, input_field in self.inputs.items()
+        }
+        # Print form data (for debugging)
+        print("Form submitted:", form_data)
+        # Navigate back to register_page
+        if self.parent:
+            self.parent.show_register_page()
+        self.close()
+
+    def cancel_form(self):
+        # Navigate back to register_page
+        if self.parent:
+            self.parent.show_register_page()
+        self.close()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
