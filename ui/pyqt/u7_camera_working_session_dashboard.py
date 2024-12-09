@@ -6,10 +6,11 @@ import numpy as np
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QProgressBar)
 from PyQt5.QtGui import QFont, QPixmap, QImage, QColor, QPainter, QLinearGradient
-from PyQt5.QtCore import Qt, QPoint, QPropertyAnimation, QTimer
+from PyQt5.QtCore import Qt, QPoint, QPropertyAnimation, QTimer, QThread, pyqtSignal
 from ui.controllers.emotion_recognition import detect_face, detect_emotion, preprocess, EmotionDetectionWorker
 from ui.pyqt.cv_window import VideoWindow
 import os
+
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -68,6 +69,7 @@ class RoundedFrame(QFrame):
         shadow.setOffset(0, 10)
         self.setGraphicsEffect(shadow)
 
+
 # class RoundedFrame(QWidget):
 #     def __init__(self, parent=None):
 #         super().__init__(parent)
@@ -89,6 +91,10 @@ class MainWindow(QWidget):
         # Initialize attributes before UI setup
         self.current_emotion = "Annoyed"
         self.emotion_start_time = time.time()
+
+        # Initialize camera worker
+        self.camera_worker = None
+        self.video_thread = None
 
         # Load emotion descriptions
         self.emotion_descriptions = {
@@ -116,31 +122,42 @@ class MainWindow(QWidget):
         # Initialize a deque to store the last 100 emotion detections
         self.emotion_history = deque(maxlen=100)
 
-        # Timer for emotion stability check
+        # Timer for emotion stability check - reduced frequency
         self.emotion_timer = QTimer()
         self.emotion_timer.timeout.connect(self.check_emotion_stability)
-        self.emotion_timer.start(1500)  # Check every 1.5 seconds
-
+        self.emotion_timer.start(2000)  # Check every 2 seconds
 
     def process_worker_result(self, frame, emotions, confidence):
-        # Update emotion history
-        for emotion_label, conf in emotions.items():
-            idx = self.worker.class_names.index(emotion_label)
-            self.emotion_history.append((idx, conf))
+        try:
+            # Define class names if not already defined in worker
+            if not hasattr(self.worker, 'class_names'):
+                self.worker.class_names = ["Annoyed", "Happiness", "Sad", "Upset"]
 
-        # Update the UI elements directly
-        self.update_video_label(frame)
-        self.update_emotional_feedback()
-        self.update_confidence_label(confidence)
+            # Update emotion history
+            for emotion_label, conf in emotions.items():
+                if emotion_label in self.worker.class_names:
+                    idx = self.worker.class_names.index(emotion_label)
+                    self.emotion_history.append((idx, conf))
+
+            # Update the UI elements directly
+            self.update_video_label(frame)
+            self.update_emotional_feedback()
+            self.update_confidence_label(confidence)
+        except Exception as e:
+            print(f"Error in process_worker_result: {str(e)}")
 
     def update_video_label(self, frame):
-        # Convert the frame to QImage for PyQt display
-        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        h, w, ch = rgb_image.shape
-        bytes_per_line = ch * w
-        qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        pixmap = QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.FastTransformation)
-        self.video_label.setPixmap(pixmap)
+        try:
+            # Resize frame before conversion for better performance
+            frame = cv2.resize(frame, (288, 208))
+            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = rgb_image.shape
+            bytes_per_line = ch * w
+            qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            pixmap = QPixmap.fromImage(qt_image)
+            self.video_label.setPixmap(pixmap)
+        except Exception as e:
+            print(f"Error updating video label: {str(e)}")
 
     def update_confidence_label(self, confidence):
         confidence_percent = int(confidence * 100)
@@ -211,12 +228,11 @@ class MainWindow(QWidget):
     def createMainContent(self):
         content = QWidget()
         content_layout = QHBoxLayout(content)
-        content_layout.setContentsMargins(40, 15, 40, 40)        # Reduced top margin to move content up
+        content_layout.setContentsMargins(40, 15, 40, 40)  # Reduced top margin to move content up
         content_layout.setSpacing(40)
         content_layout.setAlignment(Qt.AlignTop | Qt.AlignCenter)  # Changed from just AlignCenter to include AlignTop
 
         content_layout.addStretch(1)
-
 
         # Create and add the Confidence section (smaller size)
         confidence_section = self.createConfidenceSection()
@@ -264,7 +280,8 @@ class MainWindow(QWidget):
             label.setText(emotion)
             label.setStyleSheet("color: white; font-size: 22px; background: transparent;")  # Increased from 18px
 
-            percentage_label.setStyleSheet("color: white; font-size: 22px; font-weight: bold; background: transparent;")  # Increased from 18px
+            percentage_label.setStyleSheet(
+                "color: white; font-size: 22px; font-weight: bold; background: transparent;")  # Increased from 18px
 
             progress_bar.setRange(0, 100)
             progress_bar.setValue(0)
@@ -305,7 +322,8 @@ class MainWindow(QWidget):
 
         self.annoyed_face_label = QLabel(section)
         image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/annoyed.png")
-        annoyed_face_pixmap = QPixmap(image_path2).scaled(245, 245, Qt.KeepAspectRatio, Qt.SmoothTransformation) # MODIFIED: Increased emoji size from 120x120 to 160x160
+        annoyed_face_pixmap = QPixmap(image_path2).scaled(245, 245, Qt.KeepAspectRatio,
+                                                          Qt.SmoothTransformation)  # MODIFIED: Increased emoji size from 120x120 to 160x160
         self.annoyed_face_label.setPixmap(annoyed_face_pixmap)
         self.annoyed_face_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.annoyed_face_label)
@@ -339,8 +357,9 @@ class MainWindow(QWidget):
 
         # Add label for face detection message
         self.face_detection_label = QLabel("Please make sure face is in the camera", section)
-        self.face_detection_label.setStyleSheet("color: red; font-size: 14px; font-weight: bold; border: 2px solid black; "
-                                                "padding: 4px; border-radius: 5px")
+        self.face_detection_label.setStyleSheet(
+            "color: red; font-size: 14px; font-weight: bold; border: 2px solid black; "
+            "padding: 4px; border-radius: 5px")
         self.face_detection_label.setAlignment(Qt.AlignCenter)
         self.face_detection_label.setVisible(False)  # Hidden by default
         layout.addWidget(self.face_detection_label)
@@ -424,40 +443,56 @@ class MainWindow(QWidget):
 
         return self.explanation_section
 
-    def update_video_feed(self):
-        """ Update video feed in the main window by reusing video logic from VideoWindow. """
-        ret, frame = self.video_window.video.read()
-        if ret:
-            gray, faces = detect_face(frame)
+    def detect_face(self, frame):
+        """Detect faces in the frame using OpenCV"""
+        if frame is None:
+            return None, []
 
-            # Process each detected face
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        try:
+            # Initialize face cascade if not already done
+            if not hasattr(self, 'face_cascade'):
+                cascade_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "ml",
+                                            "haarcascade_frontalface_default.xml")
+                self.face_cascade = cv2.CascadeClassifier(cascade_path)
+                if self.face_cascade.empty():
+                    print(f"Error: Unable to load cascade classifier from {cascade_path}")
+                    return gray, []
+
+            # Detect faces
+            faces = self.face_cascade.detectMultiScale(
+                gray,
+                scaleFactor=1.1,
+                minNeighbors=5,
+                minSize=(120, 120),
+                maxSize=(400, 400)
+            )
+        except Exception as e:
+            print(f"Error in face detection: {str(e)}")
+            return gray, []
+
+        return gray, faces
+
+    def update_video_feed(self, frame):
+        try:
+            # Maintain aspect ratio
+            frame = cv2.resize(frame, (640, 480))
+            self.update_video_label(frame)
+        except Exception as e:
+            print(f"Error updating video feed: {str(e)}")
+
+    def process_faces(self, gray, faces):
+        try:
             for (x, y, w, h) in faces:
-                # Draw a rectangle around the detected face
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 4)
                 face_roi_gray = gray[y:y + h, x:x + w]
                 face_roi_gray = preprocess(face_roi_gray)
                 idx, conf = detect_emotion(face_roi_gray)
 
-                # Get the emotion label based on the detected index
-                emotion_label = self.video_window.class_names[idx]
-
-                # Display the emotion label on the bounding box with larger font
-                label_position = (x, y - 10) if y > 20 else (x, y + h + 20)
-                cv2.putText(frame, emotion_label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 255, 0), 4)
-
-                # Append current emotion data to history
                 self.emotion_history.append((idx, conf))
 
-                # Calculate the average emotion percentages over the last 100 frames
-                self.update_emotional_feedback()
-
-            # Convert the frame to QImage for PyQt display
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = rgb_image.shape
-            bytes_per_line = ch * w
-            qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-            self.video_label.setPixmap(
-                QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.update_emotional_feedback()
+        except Exception as e:
+            print(f"Error processing faces: {str(e)}")
 
     def load_description_from_file(self, filename):
         """Extract description text from emotion session files"""
@@ -485,8 +520,12 @@ Description not available.</p>"""
 
     def check_emotion_stability(self):
         """Check if an emotion has been dominant for 1.5 seconds"""
-        if not self.emotion_history:
+        if not self.emotion_history or not self.worker:
             return
+
+        # Ensure class_names is initialized
+        if not hasattr(self.worker, 'class_names'):
+            self.worker.class_names = ["Annoyed", "Happiness", "Sad", "Upset"]
 
         # Calculate current emotion percentages
         emotion_counts = np.zeros(len(self.worker.class_names))
@@ -503,8 +542,8 @@ Description not available.</p>"""
 
             # Only update if the new emotion has a higher percentage
             if max_emotion != self.current_emotion and emotion_percentages[max_emotion_idx] > max(
-                emotion_percentages[i] for i, emotion in enumerate(self.worker.class_names)
-                if emotion != max_emotion
+                    emotion_percentages[i] for i, emotion in enumerate(self.worker.class_names)
+                    if emotion != max_emotion
             ):
                 self.update_emotion_display(max_emotion)
 
@@ -522,8 +561,10 @@ Description not available.</p>"""
 
             # Use consistent size for all emojis, but make annoyed emoji 15% bigger
             base_size = 238
-            emoji_size = (int(base_size * 1.15), int(base_size * 1.15)) if new_emotion == "Annoyed" else (base_size, base_size)
-            emoji_pixmap = QPixmap(emoji_path).scaled(emoji_size[0], emoji_size[1], Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            emoji_size = (int(base_size * 1.15), int(base_size * 1.15)) if new_emotion == "Annoyed" else (
+                base_size, base_size)
+            emoji_pixmap = QPixmap(emoji_path).scaled(emoji_size[0], emoji_size[1], Qt.KeepAspectRatio,
+                                                      Qt.SmoothTransformation)
             self.annoyed_face_label.setPixmap(emoji_pixmap)
 
             # Keep confidence section size constant
@@ -587,16 +628,182 @@ Description not available.</p>"""
         self.confidence_label.setText(f"Confidence: {int(avg_confidence * 100)}%")
 
     def closeEvent(self, event):
-        """ Ensure video resources are released when closing the window. """
-        self.worker.stop()
-        self.worker.wait()
-        event.accept()
+        """Ensure video resources are released when closing the window."""
+        try:
+            self.worker.stop()
+            self.worker.wait()
+            self.stop_camera()
+        except Exception as e:
+            print(f"Error in closeEvent: {str(e)}")
+        finally:
+            event.accept()
 
     def endSession(self):
         """Handle the End Session button click"""
-        self.worker.stop()
-        self.worker.wait()
-        self.main_window.show_user_session_overview()
+        try:
+            if self.worker:
+                self.worker.stop()
+                self.worker.wait()
+                self.worker = None
+            if self.camera_worker:
+                self.camera_worker.stop()
+                self.camera_worker = None
+            # Clear emotion history
+            self.emotion_history.clear()
+            if self.main_window:
+                self.main_window.show_home_page()
+            else:
+                print("Warning: main_window is None, cannot show user session overview")
+                self.close()
+        except Exception as e:
+            print(f"Error in endSession: {str(e)}")
+
+    def showEvent(self, event):
+        """Start the camera when the window is shown"""
+        super().showEvent(event)
+
+        # Clean up any existing workers
+        if hasattr(self, 'camera_worker') and self.camera_worker:
+            self.camera_worker.stop()
+            self.camera_worker = None
+
+        if hasattr(self, 'worker') and self.worker:
+            self.worker.stop()
+            self.worker.wait()
+            self.worker = None
+
+        # Create and initialize new workers
+        self.camera_worker = CameraWorker()
+        self.camera_worker.frame_ready.connect(self.update_video_feed)
+        self.camera_worker.faces_detected.connect(self.process_faces)
+
+        self.worker = EmotionDetectionWorker()
+        self.worker.result_signal.connect(self.process_worker_result)
+
+        # Start the workers
+        self.camera_worker.start_camera()
+        self.worker.start()
+
+        # Clear emotion history for fresh start
+        self.emotion_history.clear()
+
+    def hideEvent(self, event):
+        """Release camera resources when the window is hidden"""
+        super().hideEvent(event)
+        try:
+            if hasattr(self, 'camera_worker') and self.camera_worker:
+                self.camera_worker.stop()
+                self.camera_worker = None
+            if hasattr(self, 'worker') and self.worker:
+                self.worker.stop()
+                self.worker.wait()
+                self.worker = None
+            self.emotion_history.clear()
+        except Exception as e:
+            print(f"Error in hideEvent: {str(e)}")
+
+    def start_camera(self):
+        if not self.camera_worker:
+            self.camera_worker = CameraWorker()
+            self.camera_worker.frame_ready.connect(self.update_video_feed)
+            self.camera_worker.faces_detected.connect(self.process_faces)
+
+        if not self.camera_worker.isRunning():
+            self.camera_worker.start_camera()
+
+    def stop_camera(self):
+        if self.camera_worker:
+            self.camera_worker.stop()
+            self.camera_worker = None
+
+
+class CameraWorker(QThread):
+    frame_ready = pyqtSignal(np.ndarray)
+    faces_detected = pyqtSignal(np.ndarray, object)  # Using object to allow both list and ndarray
+
+    def __init__(self):
+        super().__init__()
+        self.running = True
+        self.camera = None
+        self.face_cascade = None
+        self.frame_count = 0
+        self.skip_frames = 1  # Process every other frame
+        self.current_faces = []  # Store current face detections
+        self.frame_buffer = []  # Buffer for frame processing
+        self.buffer_size = 3  # Number of frames to buffer
+
+    def run(self):
+        try:
+            self.camera = cv2.VideoCapture(0)
+            if not self.camera.isOpened():
+                print("Error: Unable to open camera")
+                return
+
+            # Lower resolution for better performance
+            self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+            # Initialize face cascade once
+            cascade_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        "..", "ml", "haarcascade_frontalface_default.xml")
+            self.face_cascade = cv2.CascadeClassifier(cascade_path)
+
+            # Main capture loop
+            while self.running:
+                ret, frame = self.camera.read()
+                if ret:
+                    self.frame_count += 1
+                    frame_copy = frame.copy()
+
+                    # Process frames at regular intervals
+                    if self.frame_count % (self.skip_frames + 1) == 0:
+                        # Face detection
+                        gray = cv2.cvtColor(frame_copy, cv2.COLOR_BGR2GRAY)
+                        faces = self.face_cascade.detectMultiScale(
+                            gray,
+                            scaleFactor=1.1,
+                            minNeighbors=5,
+                            minSize=(60, 60),
+                            maxSize=(200, 200)
+                        )
+
+                        # Update current faces if faces are detected
+                        if len(faces) > 0:
+                            self.current_faces = [(int(x), int(y), int(w), int(h)) for x, y, w, h in faces]
+
+                        # Draw detection boxes using current faces
+                        for (x, y, w, h) in self.current_faces:
+                            cv2.rectangle(frame_copy, (x, y), (x + w, y + h), (255, 0, 0), 3)
+
+                        # Process face detection results
+                        self.faces_detected.emit(gray, self.current_faces)
+                    else:
+                        # Draw previous detection boxes on non-processing frames
+                        for (x, y, w, h) in self.current_faces:
+                            cv2.rectangle(frame_copy, (x, y), (x + w, y + h), (255, 0, 0), 3)
+
+                    # Emit processed frame
+                    self.frame_ready.emit(frame_copy)
+
+                # Add a small sleep to prevent CPU overload
+                time.sleep(0.01)
+
+        except Exception as e:
+            print(f"Camera error: {str(e)}")
+        finally:
+            if self.camera:
+                self.camera.release()
+
+    def stop(self):
+        self.running = False
+        self.wait()
+
+    def start_camera(self):
+        if not self.running:
+            self.running = True
+            self.start()
+        elif self.camera and not self.camera.isOpened():
+            self.camera.open(0)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -614,3 +821,5 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
+
+

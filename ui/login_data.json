@@ -1,0 +1,17 @@
+{
+    "message": "Login successful",
+    "user_info": {
+        "city": "Port Emily",
+        "country": "United States",
+        "dob": "2016-07-08",
+        "email": "daniel.kennedy@gmail.com",
+        "first_name": "daniel",
+        "id": 1,
+        "last_name": "kennedy",
+        "middle_name": "Daniel",
+        "sex": "Other",
+        "state": "Colorado",
+        "street_address": "243 David Shores Suite 818",
+        "zip_code": "07522"
+    }
+}

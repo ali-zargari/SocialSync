@@ -261,6 +261,7 @@ class OverviewScreen(QWidget):
         return button
 
 if __name__ == '__main__':
+
     app = QApplication(sys.argv)
     window = OverviewScreen()
     window.show()

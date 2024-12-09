@@ -105,29 +105,32 @@ class MainWindow(QMainWindow):
         image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v20_308.png")
         pixmap = QPixmap(image_path)
         scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        logo_label.setPixmap(pixmap)
+        logo_label.setPixmap(scaled_pixmap)
         header_inner_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
 
-        header_title = QLabel('Profile Settings', self)
+        header_title = QLabel('Emotion Recognition', self)
         header_title.setFont(QFont('Arial', 28, QFont.Bold))
         header_title.setStyleSheet("color: #71B89A;")
         header_inner_layout.addWidget(header_title, alignment=Qt.AlignLeft | Qt.AlignVCenter)
 
         header_inner_layout.addStretch()
 
-        sign_out_btn = AnimatedButton("Sign Out", self)
-        sign_out_btn.setFixedSize(120, 50)
-        sign_out_btn.clicked.connect(self.sign_out)  # Connect to the sign_out method
-
-
-        header_inner_layout.addWidget(sign_out_btn, alignment=Qt.AlignRight | Qt.AlignVCenter)
+        for text in ["Profile", "History", "Sign Out"]:
+            button = AnimatedButton(text, self)
+            button.setFixedSize(120, 50)
+            button.clicked.connect(lambda checked, btn=text: self.handle_button_click(btn))
+            header_inner_layout.addWidget(button, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
         return header_container
 
-    def sign_out(self):
-        """Navigate to the login page if parent is available."""
-        if self.parent:
-            self.parent.show_login_page()  # Call the parent's show_login_page method
+    def handle_button_click(self, btn_name):
+        """ Handle button clicks for Profile, History, and Sign Out """
+        if btn_name == "Profile":
+            self.main_window.show_profile_setting_gui()
+        elif btn_name == "History":
+            self.main_window.show_history_page()
+        elif btn_name == "Sign Out":
+            self.main_window.show_login_page()
 
 
     def createMainContent(self):
@@ -152,7 +155,7 @@ class MainWindow(QMainWindow):
         left_layout.setSpacing(20)
 
         profile_pic_container = QLabel()
-        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/add_pic.png")
+        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v25_505.png")
         profile_pixmap = QPixmap(image_path2)
         profile_pic_container.setPixmap(profile_pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         profile_pic_container.setAlignment(Qt.AlignCenter)
