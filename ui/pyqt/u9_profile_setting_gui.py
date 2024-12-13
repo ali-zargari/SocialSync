@@ -152,7 +152,7 @@ class MainWindow(QMainWindow):
         left_layout.setSpacing(20)
 
         profile_pic_container = QLabel()
-        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v14_189.png")
+        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/add_pic.png")
         profile_pixmap = QPixmap(image_path2)
         profile_pic_container.setPixmap(profile_pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         profile_pic_container.setAlignment(Qt.AlignCenter)

@@ -64,7 +64,7 @@ class ProfileSetup(QMainWindow):
         self.upload_photo_button.clicked.connect(self.upload_photo_clicked)
 
         # Set default icon
-        icon = QIcon("images/v14_189.png")
+        icon = QIcon("images/add_pic.png")
         self.upload_photo_button.setIcon(icon)
         self.upload_photo_button.setIconSize(QSize(60, 60))
 

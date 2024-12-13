@@ -193,7 +193,7 @@ class MainWindow(QWidget):
         layout.addWidget(confidence_label)
 
         smiley_label = QLabel(section)
-        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v32_182.png")
+        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/happy.png")
         smiley_pixmap = QPixmap(image_path2).scaled(180, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         smiley_label.setPixmap(smiley_pixmap)
         smiley_label.setAlignment(Qt.AlignCenter)

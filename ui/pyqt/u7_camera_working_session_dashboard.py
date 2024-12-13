@@ -68,6 +68,18 @@ class RoundedFrame(QFrame):
         shadow.setOffset(0, 10)
         self.setGraphicsEffect(shadow)
 
+# class RoundedFrame(QWidget):
+#     def __init__(self, parent=None):
+#         super().__init__(parent)
+#         self.setAttribute(Qt.WA_StyledBackground, True)
+#
+#     def paintEvent(self, event):
+#         painter = QPainter(self)
+#         painter.setRenderHint(QPainter.Antialiasing)
+#         path = QPainterPath()
+#         path.addRoundedRect(0, 0, self.width(), self.height(), 10, 10)
+#         painter.fillPath(path, self.palette().window())
+
 
 class MainWindow(QWidget):
     def __init__(self, parent=None):
@@ -169,26 +181,43 @@ class MainWindow(QWidget):
     def createMainContent(self):
         content = QWidget()
         content_layout = QHBoxLayout(content)
-        content_layout.setContentsMargins(50, 50, 50, 50)
-        content_layout.setSpacing(20)
-        content_layout.setAlignment(Qt.AlignCenter)
+        content_layout.setContentsMargins(40, 15, 40, 40)        # Reduced top margin to move content up
+        content_layout.setSpacing(40)
+        content_layout.setAlignment(Qt.AlignTop | Qt.AlignCenter)  # Changed from just AlignCenter to include AlignTop
 
-        content_layout.addWidget(self.createEmotionalFeedback(), alignment=Qt.AlignCenter)
-        content_layout.addWidget(self.createConfidenceSection(), alignment=Qt.AlignCenter)
-        content_layout.addWidget(self.createVideoFeedSection(), alignment=Qt.AlignCenter)
+        content_layout.addStretch(1)
+
+
+        # Create and add the Confidence section (smaller size)
+        confidence_section = self.createConfidenceSection()
+        confidence_section.setFixedSize(250, 180)
+        content_layout.addWidget(confidence_section, alignment=Qt.AlignTop)
+
+        # Create and add the Emotional Feedback section (wider and higher on the page)
+        emotional_feedback = self.createEmotionalFeedback()
+        emotional_feedback.setFixedSize(500, 300)  # Increased width
+        content_layout.addWidget(emotional_feedback, alignment=Qt.AlignTop)
+
+        # Create and add the Video Feed section
+        video_feed = self.createVideoFeedSection()
+        video_feed.setFixedSize(320, 240)
+        content_layout.addWidget(video_feed, alignment=Qt.AlignTop)
+
+        # Add stretch after last component to center everything
+        content_layout.addStretch(1)
 
         return content
 
     def createEmotionalFeedback(self):
         feedback = RoundedFrame()
-        feedback.setFixedSize(320, 240)
+        feedback.setFixedSize(500, 300)  # Increased width from 400 to 500
 
         layout = QVBoxLayout(feedback)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(8)
 
         header = QLabel("Emotional Feedback", feedback)
-        header.setStyleSheet("color: white; font-size: 22px; font-weight: bold;")
+        header.setStyleSheet("color: white; font-size: 28px; font-weight: bold;")  # Increased from 22px
         header.setAlignment(Qt.AlignCenter)
         layout.addWidget(header)
 
@@ -203,22 +232,22 @@ class MainWindow(QWidget):
         for emotion, (color, label, progress_bar, percentage_label) in self.emotions_data.items():
             emotion_layout = QHBoxLayout()
             label.setText(emotion)
-            label.setStyleSheet("color: white; font-size: 18px;")
+            label.setStyleSheet("color: white; font-size: 22px; background: transparent;")  # Increased from 18px
 
-            percentage_label.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
+            percentage_label.setStyleSheet("color: white; font-size: 22px; font-weight: bold; background: transparent;")  # Increased from 18px
 
             progress_bar.setRange(0, 100)
             progress_bar.setValue(0)
             progress_bar.setTextVisible(False)
-            progress_bar.setFixedHeight(10)
+            progress_bar.setFixedHeight(15)  # Increased from 10
             progress_bar.setStyleSheet(f"""
                 QProgressBar {{
                     background-color: rgba(255, 255, 255, 0.3);
-                    border-radius: 5px;
+                    border-radius: 7px;  # Increased from 5px
                 }}
                 QProgressBar::chunk {{
                     background-color: {color.name()};
-                    border-radius: 5px;
+                    border-radius: 7px;  # Increased from 5px
                 }}
             """)
 
@@ -232,22 +261,21 @@ class MainWindow(QWidget):
 
     def createConfidenceSection(self):
         section = RoundedFrame()
-        section.setFixedSize(320, 240)
+        section.setFixedSize(300, 300)  # MODIFIED: Increased section height from 180 to 220 to accommodate larger emoji
 
         layout = QVBoxLayout(section)
-        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setContentsMargins(1, 1, 1, 1)  # MODIFIED: Increased top and bottom margins to center the larger emoji
         layout.setSpacing(10)
 
         # Initialize a QLabel for confidence display to update later
         self.confidence_label = QLabel("Confidence: 0%", section)
-        self.confidence_label.setStyleSheet("font-size: 22px; color: white; font-weight: bold;")
+        self.confidence_label.setStyleSheet("font-size: 20px; color: white; font-weight: bold;")  # Reduced font size
         self.confidence_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.confidence_label)
 
         self.annoyed_face_label = QLabel(section)
-        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v25_545.png")
-        annoyed_face_pixmap = QPixmap(image_path2).scaled(180, 180, Qt.KeepAspectRatio,
-                                                                   Qt.SmoothTransformation)
+        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/annoyed.png")
+        annoyed_face_pixmap = QPixmap(image_path2).scaled(245, 245, Qt.KeepAspectRatio, Qt.SmoothTransformation) # MODIFIED: Increased emoji size from 120x120 to 160x160
         self.annoyed_face_label.setPixmap(annoyed_face_pixmap)
         self.annoyed_face_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.annoyed_face_label)
