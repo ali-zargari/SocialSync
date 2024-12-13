@@ -11,7 +11,7 @@ from ui.controllers.emotion_recognition import detect_face, detect_emotion, prep
 from ui.pyqt.cv_window import VideoWindow
 import os
 
-# Tested and working
+
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
