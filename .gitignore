@@ -2,3 +2,4 @@
 buid/
 dist/
 main.spec
+.aider*
