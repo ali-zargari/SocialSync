@@ -142,7 +142,7 @@ class MainWindow(QWidget):
         layout.addWidget(header)
 
         emotions = [
-            ("Sad", 90, QColor(52, 152, 219)),
+            ("Sad", 90, QColor("#999999")),
             ("Happiness", 3, QColor(46, 204, 113)),
             ("Upset", 2, QColor(231, 76, 60)),
             ("Annoyed", 1, QColor(241, 196, 15))
@@ -254,9 +254,9 @@ class MainWindow(QWidget):
 Sadness is a feeling you get when something unhappy or disappointing happens.</p>
 
 <p><strong style='font-size: 30px;'>Respond:</strong><br>
-• Frown<br>
-• Lower your tone<br>
-• Cry</p>
+• Take deep breaths<br>
+• Express your feelings calmly<br>
+• Take time to process your emotions</p>
 """)
         section.setWordWrap(True)
         section.setStyleSheet("""

@@ -193,7 +193,7 @@ class MainWindow(QWidget):
         layout.addWidget(confidence_label)
 
         annoyed_face_label = QLabel(section)
-        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v25_545.png")
+        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/annoyed.png")
         annoyed_face_pixmap = QPixmap(image_path2).scaled(180, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         annoyed_face_label.setPixmap(annoyed_face_pixmap)
         annoyed_face_label.setAlignment(Qt.AlignCenter)

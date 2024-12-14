@@ -1,4 +1,5 @@
 import sys
+
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QProgressBar, QScrollArea)
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient, QPainterPath
@@ -184,7 +185,7 @@ class MainWindow(QWidget):
         section.setFixedSize(320, 240)
 
         layout = QVBoxLayout(section)
-        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(10)
 
         confidence_label = QLabel("Confidence: 78%", section)
@@ -193,8 +194,8 @@ class MainWindow(QWidget):
         layout.addWidget(confidence_label)
 
         smiley_label = QLabel(section)
-        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/happy.png")
-        smiley_pixmap = QPixmap(image_path2).scaled(180, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/upset.png")
+        smiley_pixmap = QPixmap(image_path2).scaled(145, 145, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         smiley_label.setPixmap(smiley_pixmap)
         smiley_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(smiley_label)
@@ -250,12 +251,13 @@ class MainWindow(QWidget):
         section = QLabel()
         section.setFixedSize(1180, 240)
         section.setText("""
-<p><strong style='font-size: 30px;'>Happiness:</strong><br>
-A warm, comfortable feeling when something nice happens or you're doing something enjoyable.</p>
+<p><strong style='font-size: 30px;'>Upset:</strong><br>
+Feeling unhappy and disappointed because something unpleasant has happened.</p>
 
 <p><strong style='font-size: 30px;'>Respond:</strong><br>
-• Smile to the person<br>
-• Use a higher pitched voice</p>
+• Take deep breaths<br>
+• Express your feelings calmly<br>
+• Take time to process your emotions</p>
 """)
         section.setWordWrap(True)
         section.setStyleSheet("""

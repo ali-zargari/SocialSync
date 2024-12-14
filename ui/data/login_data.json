@@ -1,0 +1,17 @@
+{
+    "message": "Login successful",
+    "user_info": {
+        "city": "dad",
+        "country": "da",
+        "dob": "2000-11-11",
+        "email": "p@p",
+        "first_name": "o",
+        "id": 58,
+        "last_name": "o",
+        "middle_name": "o",
+        "sex": "Male",
+        "state": "da",
+        "street_address": "124",
+        "zip_code": "aad"
+    }
+}
