@@ -6,7 +6,7 @@
 ## Installation and Setup
 
 ### Prerequisites
-- A MacOS with ARM Architecture (Recommended)
+- A MacOS System with ARM Architecture (Recommended)
 - Python (version 3.9 to 3.12). Ensure PIP/PIP3 package installer is available.
 - PyCharm IDE (recommended but optional)
 - GitHub CLI
