@@ -1,0 +1,20 @@
+# 1- Remove previous build, dist, and spec files
+rm -rf build dist main.spec
+
+# 2- Create a standalone application using PyInstaller
+pyinstaller --onedir --noupx --noconsole \
+    --add-data "ui/assets:ui/assets" \
+    --add-data "ui/data:ui/data" \
+    --add-data "ui/ml:ui/ml" \
+    --add-data "ui/pyqt/images:ui/pyqt/images" \
+    --add-data "ui/pyqt:ui/pyqt" \
+    --add-data "ui/utils:ui/utils" \
+    --add-data "ui/controllers:ui/controllers" \
+    --add-data "ui/ml/haarcascade_frontalface_default.xml:ui/ml" \
+    --add-data "ui/ml/model.h5:ui/ml" \
+    --hidden-import=sip \
+    --hidden-import=importlib_resources.trees \
+    main.py
+
+# 3 to launch the build executable
+open dist/main.app/Contents/MacOS/main
