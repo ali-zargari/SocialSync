@@ -76,7 +76,7 @@
 5. (can skip for first time) In the root directory, run the commands in step 1 in `buildcommands.txt`.
 6. In the root directory, run the commands in step 2 in `buildcommands.txt`.
 7. Wait for the installation to complete.
-8. In the `dist` folder which should be created in the project root, you will find the executable file with the extension (.sh).
+8. In the `dist` folder which should be created in the project root, you will find the UNIX executable.
 
 ## Additional Information
 For any issues or contributions, please refer to the [issues page](https://github.com/ali-zargari/SocialSync/issues) on the Github repository.
