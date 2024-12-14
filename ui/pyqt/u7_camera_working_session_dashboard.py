@@ -255,7 +255,7 @@ class MainWindow(QWidget):
         self.emotions_data = {
             "Annoyed": (QColor(255, 193, 7), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback)),
             "Happiness": (QColor(46, 204, 113), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback)),
-            "Sad": (QColor("#BBBBBB"), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback)),
+            "Sad": (QColor("#999999"), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback)),
             "Upset": (QColor(231, 76, 60), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback))
         }
 
@@ -339,7 +339,8 @@ class MainWindow(QWidget):
 
         # Add label for face detection message
         self.face_detection_label = QLabel("Please make sure face is in the camera", section)
-        self.face_detection_label.setStyleSheet("color: red; font-size: 14px; font-weight: bold;")
+        self.face_detection_label.setStyleSheet("color: red; font-size: 14px; font-weight: bold; border: 2px solid black; "
+                                                "padding: 4px; border-radius: 5px")
         self.face_detection_label.setAlignment(Qt.AlignCenter)
         self.face_detection_label.setVisible(False)  # Hidden by default
         layout.addWidget(self.face_detection_label)
@@ -518,13 +519,13 @@ Description not available.</p>"""
 
             # Update emoji with appropriate size based on emotion
             emoji_path = os.path.join(os.path.dirname(__file__), self.emotion_emojis[new_emotion])
-            
+
             # Use consistent size for all emojis, but make annoyed emoji 15% bigger
             base_size = 238
             emoji_size = (int(base_size * 1.15), int(base_size * 1.15)) if new_emotion == "Annoyed" else (base_size, base_size)
             emoji_pixmap = QPixmap(emoji_path).scaled(emoji_size[0], emoji_size[1], Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.annoyed_face_label.setPixmap(emoji_pixmap)
-            
+
             # Keep confidence section size constant
             self.annoyed_face_label.parent().setFixedSize(298, 298)
 
@@ -535,14 +536,14 @@ Description not available.</p>"""
                 if new_emotion == "Happiness":
                     bg_color = "#B2FFD1"
                 elif new_emotion == "Sad":
-                    bg_color = "#BBBBBB"
+                    bg_color = "#999999"
                 elif new_emotion == "Upset":
                     bg_color = "#E07D7D"
                 elif new_emotion == "Annoyed":
                     bg_color = "#ECD60D"
                 else:
                     bg_color = "#C1F0D1"  # Default color
-                
+
                 self.explanation_section.setStyleSheet(f"""
                     font-size: 20px;
                     color: #333333;

@@ -142,7 +142,7 @@ class MainWindow(QWidget):
         layout.addWidget(header)
 
         emotions = [
-            ("Sad", 90, QColor("#BBBBBB")),
+            ("Sad", 90, QColor("#999999")),
             ("Happiness", 3, QColor(46, 204, 113)),
             ("Upset", 2, QColor(231, 76, 60)),
             ("Annoyed", 1, QColor(241, 196, 15))
