@@ -1,66 +1,74 @@
-# Facial Emotion Recognition
+# SocialSync - README
 
-This script detects human faces in real-time using a webcam feed and classifies their emotional state into one of four categories: Angry, Happy, Sad, or Surprise.
+## Github Repository Link
+[SocialSync Repository](https://github.com/ali-zargari/SocialSync)
 
-**For the smoothest experience, use PyCharm as your IDE.**
+## Installation and Setup
 
+### Prerequisites
+- Python (version 3.9 to 3.12). Ensure PIP/PIP3 package installer is available.
+- PyCharm IDE (recommended but optional)
+- GitHub CLI
 
-## Prerequisites
+### Recommended Installation Steps
 
-Before running the script, you must have the following installed:
-
-- Python 3.6 or higher
-- OpenCV library (cv2)
-- TensorFlow
-
-
-## Installation
-
-1. **Install Python**: Download Python from the official [Python website](https://www.python.org/downloads/) and install it on your system.
-
-2. **OPTIONAL: Set up a Virtual Environment** (**You Can Skip This Step**):
-   
-   Open a terminal and navigate to your project directory. Then run:
-   ```sh
-   python -m venv venv
-   ```
-   Activate the virtual environment:
-
-   - On Windows:
-     ```sh
-     .\venv\Scripts\activate
+1. **Clone the Repository:**
+   - Use the following commands to clone and navigate to the master branch:
      ```
-   - On macOS and Linux:
-     ```sh
+     git clone https://github.com/ali-zargari/SocialSync.git
+     cd SocialSync
+     ```
+
+2. **Setup PyCharm IDE (Optional):**
+   - Open the project using PyCharm.
+   - Configure Python version between 3.9 to 3.12. PyCharm will automatically create a virtual environment.
+
+3. **Install Dependencies:**
+   - Run the following command in the root directory:
+     ```
+     pip3 install -r requirements.txt
+     ```
+
+4. **Set Backend Credentials:**
+   - Navigate to the `backend` folder.
+   - Create a `.env` file with the following content:
+     ```
+     # Database configuration
+     MYSQL_USER=avnadmin
+     MYSQL_PASSWORD=AVNS_bwfYJtuBWOL18MGeyIU
+     MYSQL_HOST=mysql-ce79dd6-emannavarro-socialsync.e.aivencloud.com
+     MYSQL_PORT=11339
+     MYSQL_DATABASE_NAME=SocialSyncDB
+     MYSQL_SSL_MODE=REQUIRED
+     # Password hash key
+     JWT_SECRET=SSSJSU2025
+     ```
+
+5. **Run the Project:**
+   - Open two terminal windows; one in the `backend` folder and one in the `ui` folder.
+   - Execute `python3 main.py` in both terminals starting with the backend.
+
+6. **Success!**
+   - SocialSync should be up and running after executing the commands in the `ui` folder.
+
+### Alternative Installation Without PyCharm
+
+1. **Prepare the Environment:**
+   - Ensure Python (version 3.9 to 3.12) is installed along with PIP/PIP3.
+   - Install GitHub CLI.
+
+2. **Clone the Repository and Navigate:**
+   - Same as above.
+
+3. **Setup Virtual Environment:**
+   - Navigate to the project directory.
+   - Create and activate a virtual environment:
+     ```
+     python3 -m venv venv
      source venv/bin/activate
      ```
 
-3. **Install Dependencies**:
+4. **Follow Steps 3 to 5 from the Recommended Installation Steps.**
 
-   Install the required Python packages using pip:
-   ```sh
-   pip install opencv-python tensorflow
-   ```
-
-   Note: TensorFlow might require a specific version depending on the system and Python version. Visit the [TensorFlow installation guide](https://www.tensorflow.org/install) for detailed instructions.
-
-
-4. **Haar Cascade File**:
-
-   Ensure the `haarcascade_frontalface_default.xml` file is present in the same directory as your script or update the script with its path.
-
-
-5. **Model File**:
-
-   Place the pre-trained model file `model.h5` in the same directory as the script.
-
-## Running the Script
-
-With all dependencies installed and the virtual environment activated, you can run the script as follows:
-```sh
-python emotion_recognition.py
-```
-
-## Exiting the Program
-
-To exit the live video feed, focus on the video window and press the 'q' key on your keyboard.
+## Additional Information
+For any issues or contributions, please refer to the [issues page](https://github.com/ali-zargari/SocialSync/issues) on the Github repository.
