@@ -9,7 +9,6 @@ from ui.pyqt.p5_session_overview import OverviewScreen as SessionOverview
 from ui.pyqt.p6_care_profile_settings import MainWindow as CareProfileSettings
 from ui.pyqt.p6_selected_user_session_overview import OverviewScreen as SelectedUserSessionOverview
 from ui.pyqt.p10_session_history import HistoryPage
-#from ui.pyqt.pre_session import PreSession
 from ui.pyqt.u2_profile_init import ProfileSetup
 from ui.pyqt.u3_vocal_and_visual_setting import VocalVisualSettingsScreen
 from ui.pyqt.u4_home import MainWindow as Home
@@ -20,6 +19,10 @@ from ui.pyqt.u8_Emotion_session_annoyed import MainWindow as EmotionSessionAnnoy
 from ui.pyqt.u9_profile_setting_gui import MainWindow as ProfileSettingGUI
 from ui.pyqt.u_vocal_and_visual_setting import MainWindow as VocalAndVisualSetting
 from ui.pyqt.u11_session_over_view import OverviewScreen as User_SessionOverview
+from ui.pyqt.new_user_flow import LoginPage as NewUserLoginPage
+from ui.pyqt.new_asd_practioner_register import RegistrationForm as ASDPractitionerRegistration
+from ui.pyqt.practioner_landing_page import LoginPage as PractitionerLandingPage
+from ui.pyqt.new_asd_patient_register import RegistrationForm as ASDPatientRegistration
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -103,7 +106,6 @@ class MainWindow(QMainWindow):
             self.stacked_widget.addWidget(self._history_page)
         return self._history_page
 
-
     @property
     def profile_page(self):
         if not hasattr(self, '_profile_page'):
@@ -174,6 +176,34 @@ class MainWindow(QMainWindow):
             self.stacked_widget.addWidget(self._user_session_overview)
         return self._user_session_overview
 
+    @property
+    def new_user_flow(self):
+        if not hasattr(self, '_new_user_flow'):
+            self._new_user_flow = NewUserLoginPage(self)
+            self.stacked_widget.addWidget(self._new_user_flow)
+        return self._new_user_flow
+
+    @property
+    def asd_practitioner_registration(self):
+        if not hasattr(self, '_asd_practitioner_registration'):
+            self._asd_practitioner_registration = ASDPractitionerRegistration(self)
+            self.stacked_widget.addWidget(self._asd_practitioner_registration)
+        return self._asd_practitioner_registration
+
+    @property
+    def practitioner_landing_page(self):
+        if not hasattr(self, '_practitioner_landing_page'):
+            self._practitioner_landing_page = PractitionerLandingPage(self)
+            self.stacked_widget.addWidget(self._practitioner_landing_page)
+        return self._practitioner_landing_page
+
+    @property
+    def asd_patient_registration(self):
+        if not hasattr(self, '_asd_patient_registration'):
+            self._asd_patient_registration = ASDPatientRegistration(self)
+            self.stacked_widget.addWidget(self._asd_patient_registration)
+        return self._asd_patient_registration
+
     # Show methods using navigate_to to add pages to the history stack
     def show_login_page(self):
         self.navigate_to(self.login_page)
@@ -228,3 +258,16 @@ class MainWindow(QMainWindow):
 
     def show_user_session_overview(self):
         self.navigate_to(self.user_session_overview)
+
+    def show_new_user_flow(self):
+        self.navigate_to(self.new_user_flow)
+
+    def show_asd_practitioner_registration(self):
+        self.navigate_to(self.asd_practitioner_registration)
+
+    def show_practitioner_landing_page(self):
+        self.navigate_to(self.practitioner_landing_page)
+
+    def show_asd_patient_registration(self):
+        self.navigate_to(self.asd_patient_registration)
+

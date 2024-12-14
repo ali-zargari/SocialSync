@@ -2,7 +2,8 @@ import os
 import json
 
 # Directory to store cached login data
-CACHE_DIRECTORY = "data"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+CACHE_DIRECTORY = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data"))
 CACHE_FILE_PATH = os.path.join(CACHE_DIRECTORY, "login_data.json")
 
 def save_login_data(data):

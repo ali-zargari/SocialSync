@@ -1,35 +1,34 @@
 import sys
 from collections import deque
-
 import cv2
 import numpy as np
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QProgressBar)
 from PyQt5.QtGui import QFont, QPixmap, QImage, QColor, QPainter, QLinearGradient
-from PyQt5.QtCore import Qt, QPoint, QPropertyAnimation
-from ui.controllers.emotion_recognition import detect_face, detect_emotion, preprocess, EmotionDetectionWorker
-from ui.pyqt.cv_window import VideoWindow
+from PyQt5.QtCore import Qt, QPoint, QPropertyAnimation, QTimer
+from ui.controllers.emotion_recognition import detect_emotion, preprocess, EmotionDetectionWorker
 import os
 
+# Tested and working
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
         self.setStyleSheet("""
-            QPushButton {
-                background-color: #71B89A;
-                color: white;
-                border-radius: 25px;
-                font-size: 16px;
-                font-weight: bold;
-                padding: 10px;
-            }
-            QPushButton:hover {
-                background-color: #5A9A7F;
-            }
-            QPushButton:pressed {
-                background-color: #4A8A6F;
-            }
-        """)
+          QPushButton {
+              background-color: #71B89A;
+              color: white;
+              border-radius: 25px;
+              font-size: 16px;
+              font-weight: bold;
+              padding: 10px;
+          }
+          QPushButton:hover {
+              background-color: #5A9A7F;
+          }
+          QPushButton:pressed {
+              background-color: #4A8A6F;
+          }
+      """)
         self.shadow = QGraphicsDropShadowEffect(self)
         self.shadow.setBlurRadius(15)
         self.shadow.setColor(QColor(0, 0, 0, 80))
@@ -59,9 +58,9 @@ class RoundedFrame(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setStyleSheet("""
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-        """)
+          background-color: rgba(255, 255, 255, 0.2);
+          border-radius: 20px;
+      """)
         shadow = QGraphicsDropShadowEffect(self)
         shadow.setBlurRadius(20)
         shadow.setColor(QColor(0, 0, 0, 60))
@@ -72,7 +71,7 @@ class RoundedFrame(QFrame):
 class MainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.main_window = parent  # Reference to the main stacked window
+        self.main_window = parent
         self.initUI()
 
         # Initialize emotion detection worker
@@ -82,6 +81,44 @@ class MainWindow(QWidget):
 
         # Initialize a deque to store the last 100 emotion detections
         self.emotion_history = deque(maxlen=100)
+
+        # Initialize the camera as None
+        self.camera = None
+
+        # Create a timer for updating the video feed
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_video_feed)
+        # self.timer.start(33)  # Update roughly 30 times per second
+
+        # Initialize face cascade classifier
+        cascade_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "ml",
+                                    "haarcascade_frontalface_default.xml")
+        self.face_cascade = cv2.CascadeClassifier(cascade_path)
+        if self.face_cascade.empty():
+            print(f"Error: Unable to load cascade classifier from {cascade_path}")
+
+    def detect_face(self, frame):
+        if frame is None:
+            return None, []
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        try:
+            # Adjusted parameters for more consistent detection
+            faces = self.face_cascade.detectMultiScale(
+                gray,
+                scaleFactor=1.1,
+                minNeighbors=5,
+                minSize=(120, 120),  # Increased minimum face size
+                maxSize=(400, 400)  # Added maximum face size
+            )
+        except cv2.error as e:
+            print(f"OpenCV error in face detection: {str(e)}")
+            return gray, []
+        except Exception as e:
+            print(f"Unexpected error in face detection: {str(e)}")
+            return gray, []
+
+        return gray, faces
 
     def process_worker_result(self, frame, emotions, confidence):
         # Update emotion history
@@ -95,13 +132,14 @@ class MainWindow(QWidget):
         self.update_confidence_label(confidence)
 
     def update_video_label(self, frame):
-        # Convert the frame to QImage for PyQt display
-        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        h, w, ch = rgb_image.shape
-        bytes_per_line = ch * w
-        qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        pixmap = QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.FastTransformation)
-        self.video_label.setPixmap(pixmap)
+        if frame is not None:
+            # Convert the frame to QImage for PyQt display
+            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = rgb_image.shape
+            bytes_per_line = ch * w
+            qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            pixmap = QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.video_label.setPixmap(pixmap)
 
     def update_confidence_label(self, confidence):
         self.confidence_label.setText(f"Confidence: {int(confidence * 100)}%")
@@ -212,15 +250,15 @@ class MainWindow(QWidget):
             progress_bar.setTextVisible(False)
             progress_bar.setFixedHeight(10)
             progress_bar.setStyleSheet(f"""
-                QProgressBar {{
-                    background-color: rgba(255, 255, 255, 0.3);
-                    border-radius: 5px;
-                }}
-                QProgressBar::chunk {{
-                    background-color: {color.name()};
-                    border-radius: 5px;
-                }}
-            """)
+              QProgressBar {{
+                  background-color: rgba(255, 255, 255, 0.3);
+                  border-radius: 5px;
+              }}
+              QProgressBar::chunk {{
+                  background-color: {color.name()};
+                  border-radius: 5px;
+              }}
+          """)
 
             emotion_layout.addWidget(label)
             emotion_layout.addWidget(progress_bar)
@@ -247,7 +285,7 @@ class MainWindow(QWidget):
         self.annoyed_face_label = QLabel(section)
         image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v25_545.png")
         annoyed_face_pixmap = QPixmap(image_path2).scaled(180, 180, Qt.KeepAspectRatio,
-                                                                   Qt.SmoothTransformation)
+                                                          Qt.SmoothTransformation)
         self.annoyed_face_label.setPixmap(annoyed_face_pixmap)
         self.annoyed_face_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.annoyed_face_label)
@@ -297,17 +335,17 @@ class MainWindow(QWidget):
         help_button = AnimatedButton('Help', self)
         help_button.setFixedSize(120, 50)
         help_button.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                color: #39687C;
-                border-radius: 25px;
-                font-size: 18px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #E0E0E0;
-            }
-        """)
+          QPushButton {
+              background-color: white;
+              color: #39687C;
+              border-radius: 25px;
+              font-size: 18px;
+              font-weight: bold;
+          }
+          QPushButton:hover {
+              background-color: #E0E0E0;
+          }
+      """)
         button_layout.addWidget(help_button)
 
         # Add stretch to push buttons to opposite sides
@@ -317,17 +355,17 @@ class MainWindow(QWidget):
         end_session_button = AnimatedButton('End Session', self)
         end_session_button.setFixedSize(120, 50)
         end_session_button.setStyleSheet("""
-            QPushButton {
-                background-color: #FF0000;
-                color: white;
-                border-radius: 25px;
-                font-size: 18px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #CC0000;
-            }
-        """)
+          QPushButton {
+              background-color: #FF0000;
+              color: white;
+              border-radius: 25px;
+              font-size: 18px;
+              font-weight: bold;
+          }
+          QPushButton:hover {
+              background-color: #CC0000;
+          }
+      """)
         end_session_button.clicked.connect(self.endSession)
         button_layout.addWidget(end_session_button)
 
@@ -350,12 +388,12 @@ Being annoyed is when you feel irritated or slightly angry because something is 
 """)
         section.setWordWrap(True)
         section.setStyleSheet("""
-            font-size: 20px;
-            color: #333333;
-            background-color: #C1F0D1;
-            padding: 28px;
-            border-radius: 25px;
-        """)
+          font-size: 20px;
+          color: #333333;
+          background-color: #C1F0D1;
+          padding: 28px;
+          border-radius: 25px;
+      """)
         section.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
         shadow = QGraphicsDropShadowEffect(self)
@@ -367,43 +405,43 @@ Being annoyed is when you feel irritated or slightly angry because something is 
         return section
 
     def update_video_feed(self):
-        """ Update video feed in the main window by reusing video logic from VideoWindow. """
-        ret, frame = self.video_window.video.read()
-        if ret:
-            gray, faces = detect_face(frame)
+        if self.camera is None or not self.camera.isOpened():
+            return
 
-            # Process each detected face
-            for (x, y, w, h) in faces:
-                # Draw a rectangle around the detected face
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 4)
-                face_roi_gray = gray[y:y + h, x:x + w]
-                face_roi_gray = preprocess(face_roi_gray)
-                idx, conf = detect_emotion(face_roi_gray)
+        try:
+            ret, frame = self.camera.read()
+            if not ret:
+                print("Failed to capture frame")
+                return
 
-                # Get the emotion label based on the detected index
-                emotion_label = self.video_window.class_names[idx]
+            # Maintain aspect ratio
+            frame = cv2.resize(frame, (640, 480))
 
-                # Display the emotion label on the bounding box with larger font
-                label_position = (x, y - 10) if y > 20 else (x, y + h + 20)
-                cv2.putText(frame, emotion_label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 255, 0), 4)
+            gray, faces = self.detect_face(frame)
+            if gray is not None:
+                # Process each detected face
+                for (x, y, w, h) in faces:
+                    # Draw detection box with consistent thickness
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 3)
+                    face_roi_gray = gray[y:y + h, x:x + w]
+                    face_roi_gray = preprocess(face_roi_gray)
+                    idx, conf = detect_emotion(face_roi_gray)
 
-                # Append current emotion data to history
-                self.emotion_history.append((idx, conf))
+                    emotion_label = self.worker.class_names[idx]
 
-                # Calculate the average emotion percentages over the last 100 frames
-                self.update_emotional_feedback()
+                    # Adjusted label position and font size
+                    label_position = (x, y - 20) if y > 20 else (x, y + h + 30)
+                    cv2.putText(frame, emotion_label, label_position,
+                                cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
 
-            # Convert the frame to QImage for PyQt display
-            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = rgb_image.shape
-            bytes_per_line = ch * w
-            qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-            self.video_label.setPixmap(
-                QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    self.emotion_history.append((idx, conf))
+
+            self.update_video_label(frame)
+            self.update_emotional_feedback()
+        except Exception as e:
+            print(f"Error in update_video_feed: {str(e)}")
 
     def update_emotional_feedback(self):
-        # Your provided update_emotional_feedback method
-        # Assuming `self.worker.class_names` gives the list of emotions
         emotion_counts = np.zeros(len(self.worker.class_names))
         total_conf = 0
 
@@ -427,45 +465,85 @@ Being annoyed is when you feel irritated or slightly angry because something is 
             progress_bar.setValue(percentage)
             percentage_label.setText(f"{percentage}%")
 
-            # Reset style if percentage is zero to ensure the bar appears empty
-            if percentage == 0:
-                progress_bar.setStyleSheet(f"""
-                    QProgressBar {{
-                        background-color: rgba(255, 255, 255, 0.3);
-                        border-radius: 5px;
-                    }}
-                    QProgressBar::chunk {{
-                        background-color: rgba(0, 0, 0, 0);  # Transparent when 0%
-                        border-radius: 5px;
-                    }}
-                """)
-            else:
-                progress_bar.setStyleSheet(f"""
-                    QProgressBar {{
-                        background-color: rgba(255, 255, 255, 0.3);
-                        border-radius: 5px;
-                    }}
-                    QProgressBar::chunk {{
-                        background-color: {color.name()};
-                        border-radius: 5px;
-                    }}
-                """)
+            # Update progress bar style
+            progress_bar.setStyleSheet(f"""
+              QProgressBar {{
+                  background-color: rgba(255, 255, 255, 0.3);
+                  border-radius: 5px;
+                  text-align: center;
+              }}
+              QProgressBar::chunk {{
+                  background-color: {color.name()};
+                  border-radius: 5px;
+              }}
+          """)
 
         # Update confidence with the average confidence across recent frames
         avg_confidence = total_conf / len(self.emotion_history) if self.emotion_history else 0
         self.confidence_label.setText(f"Confidence: {int(avg_confidence * 100)}%")
 
     def closeEvent(self, event):
-        """ Ensure video resources are released when closing the window. """
-        self.worker.stop()
-        self.worker.wait()
-        event.accept()
+        """Ensure video resources are released when closing the window."""
+        try:
+            self.worker.stop()
+            self.worker.wait()
+            self.stop_camera()
+        except Exception as e:
+            print(f"Error in closeEvent: {str(e)}")
+        finally:
+            event.accept()
 
     def endSession(self):
         """Handle the End Session button click"""
         self.worker.stop()
         self.worker.wait()
-        self.main_window.show_user_session_overview()
+        self.stop_camera()
+        if self.main_window:
+            self.main_window.show_home_page()
+        else:
+            print("Warning: main_window is None, cannot show user session overview")
+            self.close()
+
+    def showEvent(self, event):
+        """Start the camera when the window is shown"""
+        super().showEvent(event)
+        self.start_camera()
+        self.worker.start()
+
+    def hideEvent(self, event):
+        """Release camera resources when the window is hidden"""
+        super().hideEvent(event)
+        self.stop_camera()
+        self.worker.stop()
+        self.worker.wait()
+
+    def stop_camera(self):
+        self.timer.stop()
+        if self.camera is not None and self.camera.isOpened():
+            self.camera.release()
+            self.camera = None
+
+    def start_camera(self):
+        if self.camera is None or not self.camera.isOpened():
+            try:
+                self.camera = cv2.VideoCapture(0)
+                if not self.camera.isOpened():
+                    print("Error: Unable to open camera")
+                    return
+
+                # Set camera resolution to 1280x720
+                self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+                self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
+                # Warm up the camera
+                for _ in range(30):  # Skip first 30 frames
+                    ret, _ = self.camera.read()
+                    if not ret:
+                        break
+
+                self.timer.start(33)
+            except Exception as e:
+                print(f"Error initializing camera: {str(e)}")
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -480,6 +558,8 @@ Being annoyed is when you feel irritated or slightly angry because something is 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
+    main_window = QWidget()  # Create a dummy main window
+    camera_window = MainWindow(main_window)
+    camera_window.show()
     sys.exit(app.exec_())
+

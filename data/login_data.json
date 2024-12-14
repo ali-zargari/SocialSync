@@ -1,0 +1,17 @@
+{
+    "message": "Login successful",
+    "user_info": {
+        "city": "watsonville",
+        "country": "USA",
+        "dob": "1989-02-01",
+        "email": "emannavarro@hotmail.com",
+        "first_name": "Emanuel ",
+        "id": 41,
+        "last_name": "Navarro",
+        "middle_name": "",
+        "sex": "Male",
+        "state": "CA",
+        "street_address": "724 palm ave",
+        "zip_code": "95076"
+    }
+}

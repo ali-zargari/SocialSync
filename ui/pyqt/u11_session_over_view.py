@@ -86,7 +86,7 @@ class CircleTextButton(QWidget):
         print(f"{self.text} button clicked")
 
 class OverviewScreen(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__()
         self.initUI()
         self.parent = parent
@@ -261,6 +261,7 @@ class OverviewScreen(QWidget):
         return button
 
 if __name__ == '__main__':
+
     app = QApplication(sys.argv)
     window = OverviewScreen()
     window.show()
