@@ -77,7 +77,8 @@
 6. In the root directory, run the commands in step 2 in `buildcommands.txt`.
 7. Wait for the installation to complete.
 8. In the `dist` folder which should be created in the project root, you will find the UNIX executable.
-
+- NOTE: When the app is launched for the first time, it may ask for camera access. Please allow it use the camera.
+- You may need to sign out and sing back in, or relaunch the app after the first time you run it.
 ## Additional Information
 For any issues or contributions, please refer to the [issues page](https://github.com/ali-zargari/SocialSync/issues) on the Github repository.
 
