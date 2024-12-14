@@ -255,7 +255,7 @@ class MainWindow(QWidget):
         self.emotions_data = {
             "Annoyed": (QColor(255, 193, 7), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback)),
             "Happiness": (QColor(46, 204, 113), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback)),
-            "Sad": (QColor(52, 152, 219), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback)),
+            "Sad": (QColor("#BBBBBB"), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback)),
             "Upset": (QColor(231, 76, 60), QLabel(feedback), QProgressBar(feedback), QLabel("0%", feedback))
         }
 
@@ -528,9 +528,28 @@ Description not available.</p>"""
             # Keep confidence section size constant
             self.annoyed_face_label.parent().setFixedSize(298, 298)
 
-            # Update description using the pre-loaded description
+            # Update description using the pre-loaded description and set appropriate color
             if new_emotion in self.emotion_descriptions:
                 self.explanation_section.setText(self.emotion_descriptions[new_emotion])
+                # Set background color based on emotion
+                if new_emotion == "Happiness":
+                    bg_color = "#B2FFD1"
+                elif new_emotion == "Sad":
+                    bg_color = "#BBBBBB"
+                elif new_emotion == "Upset":
+                    bg_color = "#E07D7D"
+                elif new_emotion == "Annoyed":
+                    bg_color = "#ECD60D"
+                else:
+                    bg_color = "#C1F0D1"  # Default color
+                
+                self.explanation_section.setStyleSheet(f"""
+                    font-size: 20px;
+                    color: #333333;
+                    background-color: {bg_color};
+                    padding: 28px;
+                    border-radius: 25px;
+                """)
             else:
                 print(f"Warning: No description found for emotion {new_emotion}")
 
