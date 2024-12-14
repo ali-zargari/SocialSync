@@ -132,7 +132,7 @@ class MainWindow(QWidget):
             # Define class names if not already defined in worker
             if not hasattr(self.worker, 'class_names'):
                 self.worker.class_names = ["Annoyed", "Happiness", "Sad", "Upset"]
-
+            
             # Update emotion history
             for emotion_label, conf in emotions.items():
                 if emotion_label in self.worker.class_names:
@@ -562,7 +562,7 @@ Description not available.</p>"""
             # Use consistent size for all emojis, but make annoyed emoji 15% bigger
             base_size = 238
             emoji_size = (int(base_size * 1.15), int(base_size * 1.15)) if new_emotion == "Annoyed" else (
-                base_size, base_size)
+            base_size, base_size)
             emoji_pixmap = QPixmap(emoji_path).scaled(emoji_size[0], emoji_size[1], Qt.KeepAspectRatio,
                                                       Qt.SmoothTransformation)
             self.annoyed_face_label.setPixmap(emoji_pixmap)
@@ -661,12 +661,12 @@ Description not available.</p>"""
     def showEvent(self, event):
         """Start the camera when the window is shown"""
         super().showEvent(event)
-
+        
         # Clean up any existing workers
         if hasattr(self, 'camera_worker') and self.camera_worker:
             self.camera_worker.stop()
             self.camera_worker = None
-
+            
         if hasattr(self, 'worker') and self.worker:
             self.worker.stop()
             self.worker.wait()
@@ -676,14 +676,14 @@ Description not available.</p>"""
         self.camera_worker = CameraWorker()
         self.camera_worker.frame_ready.connect(self.update_video_feed)
         self.camera_worker.faces_detected.connect(self.process_faces)
-
+        
         self.worker = EmotionDetectionWorker()
         self.worker.result_signal.connect(self.process_worker_result)
-
+        
         # Start the workers
         self.camera_worker.start_camera()
         self.worker.start()
-
+            
         # Clear emotion history for fresh start
         self.emotion_history.clear()
 
@@ -754,7 +754,7 @@ class CameraWorker(QThread):
                 if ret:
                     self.frame_count += 1
                     frame_copy = frame.copy()
-
+                    
                     # Process frames at regular intervals
                     if self.frame_count % (self.skip_frames + 1) == 0:
                         # Face detection
@@ -766,22 +766,22 @@ class CameraWorker(QThread):
                             minSize=(60, 60),
                             maxSize=(200, 200)
                         )
-
+                        
                         # Update current faces if faces are detected
                         if len(faces) > 0:
                             self.current_faces = [(int(x), int(y), int(w), int(h)) for x, y, w, h in faces]
-
+                            
                         # Draw detection boxes using current faces
                         for (x, y, w, h) in self.current_faces:
                             cv2.rectangle(frame_copy, (x, y), (x + w, y + h), (255, 0, 0), 3)
-
+                            
                         # Process face detection results
                         self.faces_detected.emit(gray, self.current_faces)
                     else:
                         # Draw previous detection boxes on non-processing frames
                         for (x, y, w, h) in self.current_faces:
                             cv2.rectangle(frame_copy, (x, y), (x + w, y + h), (255, 0, 0), 3)
-
+                    
                     # Emit processed frame
                     self.frame_ready.emit(frame_copy)
 
